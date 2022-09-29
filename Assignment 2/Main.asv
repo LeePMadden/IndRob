@@ -1,0 +1,35 @@
+close all
+
+clc
+
+%% Generate Environment 
+
+%% Workspace Size 
+% workspace = [-2 2 -2 2 -0.3 2];
+
+%%workspace = [-10 10 -10 10 0 10];
+
+
+%% Surface
+surf([-3,-3;3,3],[-3,3;-3,3],[0.01,0.01;0.01,0.01],'CData',imread('concrete.jpg'),'FaceColor','texturemap');
+
+hold on; 
+
+UR3Pose = [0.3,0.2,0.62];
+
+UR3_M = UR3Main;
+
+UR3_M.model.base = transl(UR3Pose) * trotz(pi);
+
+q = zeros(1,6);
+
+PlaceObject('conveyerthin.ply', [0.75,0.75,0])
+
+PlaceObject('conveyer.ply', [-1,1,0])
+
+PlaceObject('workshoptable.ply', [0,0.2,0.6])
+
+PlaceObject('control.ply', [0,0.2,0.6])
+
+UR3_M.model.animate(q)
+
