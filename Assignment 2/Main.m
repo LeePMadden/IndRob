@@ -15,23 +15,21 @@ surf([-3,-3;3,3],[-3,3;-3,3],[0.01,0.01;0.01,0.01],'CData',imread('concrete.jpg'
 
 hold on; 
 
-UR3Pose = [0.3,0.2,0.62];
+UR3Pose = [0.35,0.2,0.62];
 
-UR3_M = UR3Main;
+UR3 = UR3Main;
 
-UR3_M.model.base = transl(UR3Pose) * trotz(pi);
-
-UR3_M_CurrPose = UR3_M.model.fkine(UR3_M.model.getpos());
+UR3.model.base = transl(UR3Pose) * trotz(pi);
 
 q = [0,0,0,0,0,0]; %zeros(1,6);
 
-PlaceObject('conveyerthin.ply', [0.75,0.75,0])
+PlaceObject('conveyerthin.ply', [0.7,0.75,0])
 
 PlaceObject('conveyer.ply', [-1,1,0])
 
 PlaceObject('workshoptable.ply', [0,0.2,0.6])
 
-PlaceObject('controlpanel.ply', [0,1,0.2])
+PlaceObject('controlpanel.ply', [1.5,1.4,0.2])
 
 % PlaceObject('compactor.ply', [0,-0.4,0])
 
@@ -55,6 +53,55 @@ hold on
     % https://sketchfab.com/3d-models/fire-extinguisher-5676b179b3b744c0aaae53a3dcea2300
 PlaceObject('FireExtinguisher.ply', [0.35, 1.5, 0.4]);
 
-UR3_M.model.animate(q)
+UR3.model.animate(q)
 
 %% Need to input cans and boxes
+
+cPose = [0.75  0.2    0.55;  % Position 1
+         0.75  0.3  0.55; % Position 2
+         0.75  0.4  0.55;  % Position 3
+         0.75  0.5    0.55; % Position 4
+         0.75  0.6  0.55; % Position 5
+         0.75  0.7  0.55; % Position 6
+         0.75  0.8    0.55; % Position 7
+         0.75  0.9  0.55; % Position 8
+         0.75  1   0.55]; % Position 9
+
+    %% Can Meshes 
+for i = 1:9
+
+    % create variable name based on iterator
+    cLoc(i) = PlaceObject('can.ply',cPose(i,:)); 
+    % cMesh(i) = PlaceObject('can.ply',cPose(i,:));         
+end 
+
+    %% Move to location of first can
+
+
+UR3_CurrPose = UR3.model.fkine(UR3.model.getpos());
+
+cLoc = transl(cPose(1,1),cPose(1,2),(cPose(1,3) + 0.1)) * trotx(pi);
+
+UR3_Ikcon = UR3.model.ikcon(cLoc,q)
+
+UR3_Traj = jtraj(q,UR3_Ikcon,25)
+
+% iterates through joint trajectories
+for j = 1:size(UR3_Traj,1)
+
+    hold on
+
+    traj = UR3_Traj(j,:);
+
+    UR3.model.animate(traj);
+
+    UR3_Fkine = UR3.model.fkine(UR3.model.getpos());
+
+    %%%%% "Gripper"
+%                  cowHerd.cow{1}.base = UR3Fkine;
+%                  cowHerd.cow{1}.animate(0);
+
+    drawnow();
+    % slow down speed 
+    pause(0.05)
+end
