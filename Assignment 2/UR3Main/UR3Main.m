@@ -4,7 +4,7 @@ classdef UR3Main < handle
         model;
         
         %> workspace
-        workspace = [0 3 0 3 -0.2 1.1];   
+        workspace = [-3 3 -3 3 -0.2 1.1];   
       
     end
     
@@ -34,7 +34,7 @@ classdef UR3Main < handle
             L3 = Link('d',0,'a',-0.21325,'alpha',0,'qlim', deg2rad([-360 360]), 'offset', 0);
             L4 = Link('d',0.11235,'a',0,'alpha',pi/2,'qlim',deg2rad([-360 360]),'offset', 0);
             L5 = Link('d',0.08535,'a',0,'alpha',-pi/2,'qlim',deg2rad([-360,360]), 'offset',0);
-            L6 = Link('d',0.0819,'a',0,'alpha',0,'qlim',deg2rad([-360,360]), 'offset', 0);
+            L6 = Link('d',0.0819,'a',0,'alpha',0,'qlim',deg2rad([-90,90]), 'offset', 0);
              
             self.model = SerialLink([L1 L2 L3 L4 L5 L6],'name',name);
         end

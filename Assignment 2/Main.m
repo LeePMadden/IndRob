@@ -24,16 +24,20 @@ UR3.model.base = transl(UR3Pose) * trotz(pi);
 q = [0,0,0,0,0,0]; %zeros(1,6);
 
 PlaceObject('conveyerthin.ply', [0.7,0.75,0])
+hold on 
 
 PlaceObject('conveyer.ply', [-1,1,0])
+hold on
 
-PlaceObject('workshoptable.ply', [0,0.2,0.6])
+%PlaceObject('workshoptable.ply', [0,0.2,0.6])
+hold on 
 
 PlaceObject('controlpanel.ply', [1.5,1.4,0.2])
-
+hold on
 % PlaceObject('compactor.ply', [0,-0.4,0])
 
 PlaceObject('glassbin.ply', [0.8,-0.3,0])
+hold on
 
     %% Safety Fence
     % https://sketchfab.com/3d-models/emergency-stop-button-012e4809a41445ca9de17286f677fabb
@@ -72,7 +76,8 @@ for i = 1:9
 
     % create variable name based on iterator
     cLoc(i) = PlaceObject('can.ply',cPose(i,:)); 
-    % cMesh(i) = PlaceObject('can.ply',cPose(i,:));         
+    % cMesh(i) = PlaceObject('can.ply',cPose(i,:));
+
 end 
 
     %% Move to location of first can
