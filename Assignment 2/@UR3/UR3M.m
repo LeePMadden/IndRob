@@ -1,28 +1,28 @@
-classdef UR3 < handle
+classdef UR3M < handle
     properties
         %> Robot model
         model;
         
         %> workspace
-        workspace = [-2 2 -2 2 -0.3 2];   
-         
+        workspace = [-3 3 -3 3 -0.2 1.1];   
+      
     end
     
-    methods%% Class for UR20 robot simulation
-        function self = UR3(toolModelAndTCPFilenames)
-    if 0 < nargin
-        if length(toolModelAndTCPFilenames) ~= 2
-            error('Please pass a cell with two strings, toolModelFilename and toolCenterPointFilename');
-        end
-        self.toolModelFilename = toolModelAndTCPFilenames{1};
-        self.toolParametersFilenamure = toolModelAndTCPFilenames{2};
-    end
-    
-    self.GetUR20Robot();
-    self.PlotAndColourRobot();%robot,workspace);
+    methods%% Class for UR3 robot simulation
+        function self = UR3M(toolModelAndTCPFilenames)
+            if 0 < nargin
+                if length(toolModelAndTCPFilenames) ~= 2
+                    error('Please pass a cell with two strings, toolModelFilename and toolCenterPointFilename');
+                end
+                self.toolModelFilename = toolModelAndTCPFilenames{1};
+                self.toolParametersFilenamure = toolModelAndTCPFilenames{2};
+            end
+            
+            self.GetUR3Robot();
+            self.PlotAndColourRobot();%robot,workspace);
 
-    drawnow
-end
+            drawnow
+        end
 
         %% GetUR3Robot
         % Given a name (optional), create and return a UR3 robot model

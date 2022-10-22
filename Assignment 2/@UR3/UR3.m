@@ -8,7 +8,7 @@ classdef UR3 < handle
          
     end
     
-    methods%% Class for UR20 robot simulation
+    methods%% Class for UR3 robot simulation
         function self = UR3(toolModelAndTCPFilenames)
     if 0 < nargin
         if length(toolModelAndTCPFilenames) ~= 2
@@ -18,7 +18,7 @@ classdef UR3 < handle
         self.toolParametersFilenamure = toolModelAndTCPFilenames{2};
     end
     
-    self.GetUR20Robot();
+    self.GetUR3Robot();
     self.PlotAndColourRobot();%robot,workspace);
 
     drawnow
