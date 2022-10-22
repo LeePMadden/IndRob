@@ -17,10 +17,14 @@ clc
     MyWorld
 
      UR3Pose = [0.35,0.35,0.35];
-    UR20Pose = [-1, 0, 0];
+    UR20Pose = [-1.2, 0.2, 0];
+
     
-    UR3arm = UR3;
+     UR3arm = UR3;
     UR20arm = UR20;
+
+
+    UR20arm.gripper = true;
     
     % UR20arm = UR20;
     
@@ -29,6 +33,8 @@ clc
     UR20arm.model.base = transl(UR20Pose) * trotz(pi);
     
     q = [0,0,0,0,0,0]; %zeros(1,6);
+
+
     
     UR3arm.model.animate(q)
     UR20arm.model.animate(q)
@@ -39,7 +45,7 @@ clc
 %              0.75 0.3  0.3; % Position 2
 %              0.6  0.2  0.3;  % Position 3
 %              0.7  0.3  0.3; % Position 4
-%              0.6  0.1  0.3; % Position 5
+%              0.6  0.1  0.3; % Position 5https://github.com/LeePMadden/IndRob/blob/main/Assignment%202/%40UR20/UR20gripper.ply
 %              0.7  0.1  0.3; % Position 6
 %              0.6  0.2  0.3; % Position 7
 %              0.7  0.15 0.3; % Position 8
@@ -59,24 +65,19 @@ cPose = [1 0.2  0.3;
     
     Input = [0.3 0 0.55];
     
-%     PlaceObject('cancube.ply', [-0.5,-0.5,0.15])
-%     hold on
-% 
-%     PlaceObject('cancube.ply', [-2,-0,0.15])
-%     hold on
-%     PlaceObject('cancube.ply', [-2,-0.25,0.15])
-%     hold on
-%     PlaceObject('cancube.ply', [-2,-0.5,0.15])
-%     hold on
-%     PlaceObject('cancube.ply', [-2,-0.25,0.35])
-%     hold on
-%     PlaceObject('cancube.ply', [-2,-0.5,0.35])
-%     hold on
+    PlaceObject('cancube.ply', [-0.5,-0.5,0.15])
+    hold on
 
-
-PlaceObject('UR20Gripper.ply', [0.5,0.5,0.5])
-hold on
-
+    PlaceObject('cancube.ply', [-2,-0,0.15])
+    hold on
+    PlaceObject('cancube.ply', [-2,-0.25,0.15])
+    hold on
+    PlaceObject('cancube.ply', [-2,-0.5,0.15])
+    hold on
+    PlaceObject('cancube.ply', [-2,-0.25,0.35])
+    hold on
+    PlaceObject('cancube.ply', [-2,-0.5,0.35])
+    hold on
 
 
 % retract(UR3arm)
@@ -103,15 +104,15 @@ hold on
 %% Can Meshes 
 
 
-% resPose = [deg2rad(-7.2) deg2rad(-144) deg2rad(137) ...
-%     deg2rad(-203) deg2rad(-86.4) deg2rad(-36)];
-% 
-% % resPose_2 = [deg2rad(0) deg2rad(-144) deg2rad(137) ...
-% %     deg2rad(-203) deg2rad(-86.4) deg2rad(-36)];
-%     
-%     UR3arm.model.animate(resPose)
-% % 
-% %     UR20arm.model.animate(resPose)
+resPose = [deg2rad(-7.2) deg2rad(-144) deg2rad(137) ...
+    deg2rad(-203) deg2rad(-86.4) deg2rad(-36)];
+
+resPose_2 = [deg2rad(-56.9) deg2rad(-79.2) deg2rad(82.6) ...
+    deg2rad(-95) deg2rad(-90) deg2rad(123)];
+    
+    UR3arm.model.animate(resPose)
+
+    UR20arm.model.animate(resPose_2)
 % 
 % 
 % 
@@ -127,28 +128,28 @@ hold on
 % % 
 % % trajectory_q2c(UR20arm, block, carry)
 % 
-% for j = 1:cCols
-% 
-%     disp(j)
-%     
-%     cTarget = cPose(j,:);
-% 
-%     carry = false;
-% 
-%     % call fucntion
-%     disp('picking up can')
-%     trajectory_q2c(UR3arm, cTarget, carry)
-%     
-%     UR3arm.model.getpos;
-% 
-%     carry = true;
-%     
-%     disp('dropping off can')
-%     trajectory_q2c(UR3arm, Input, carry)
-% 
-% end
+for j = 1:1
 
-% retract(UR3arm)
+    disp(j)
+    
+    cTarget = cPose(j,:);
+
+    carry = false;
+
+    % call fucntion
+    disp('picking up can')
+    trajectory_q2c(UR3arm, cTarget, carry)
+    
+    UR3arm.model.getpos;
+
+    carry = true;
+    
+    disp('dropping off can')
+    trajectory_q2c(UR3arm, Input, carry)
+
+end
+
+retract(UR3arm)
 
 
 % 
