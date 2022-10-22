@@ -3,6 +3,9 @@
 % Loads in static objects in the simulated environment 
 function MyWorld 
 
+PlaceObject('EmergencyStop.ply',[0.4,-0.5,0.65])
+hold on
+
 PlaceObject('garagedoor.ply', [3,-3,0])
 hold on
 
