@@ -24,7 +24,7 @@ clc
     UR20arm = UR20;
 
 
-    UR20arm.gripper = true;
+    %UR20arm.gripper = true;
     
     % UR20arm = UR20;
     
@@ -144,15 +144,16 @@ for j = 1:4
 
     cancarry = false;
 
-    cubecarry = true;
+    cubecarry = false;
 
     % call fucntion
     disp('picking up can')
+    
     trajectory_q2c(UR3arm, cTarget, cancarry, UR20arm,  [-0.5,-0.5,0.15], cubecarry)
 
     UR3arm.model.getpos;
 
-    cancarry = false;
+    cancarry = true;
     
     disp('dropping off can')
     trajectory_q2c(UR3arm, Input, cancarry, UR20arm,  [-0.5,-0.5,0.15], cubecarry)
@@ -165,7 +166,7 @@ for j = 1:4
 
     cancarry = false;
 
-    cubecarry = true;
+    cubecarry = false;
 
     % call fucntion
     disp('picking up cube')
@@ -173,7 +174,7 @@ for j = 1:4
 
     UR3arm.model.getpos;
 
-    cancarry = true;
+    cubecarry = true;
     
     disp('dropping off cube')
     trajectory_q2c(UR3arm, Input, cancarry, UR20arm,  [0,-2,0.4], cubecarry)
@@ -342,7 +343,7 @@ rehash path
         UR20robotPos = UR20robotarm.model.getpos();
         UR20ikcon = UR20robotarm.model.ikcon(UR20nextLoc, UR3robotPos);
         UR20traj = jtraj(UR20robotPos, UR20ikcon,25);
-
+        
         
         %iterates through joint trajectories 
         for k = 1:size(UR3traj,1)
@@ -365,46 +366,20 @@ rehash path
             UR20EELoc = UR20robotLoc(1:3,4)' - [0,0,0.5];
 
             %slow down speed 
-
             if UR3holding == true
-               
-                load = PlaceObject('can.ply',UR3EELoc);
-%                load = PlaceObject('cancube.ply',EELoc);
-               
-               drawnow();
-
-%                pause(0.01)
-
-               delete(load);
-
-            else 
-
-                drawnow();
-                pause(0.1)
-
+                load(1) = PlaceObject('can.ply',UR3EELoc);
+            else
+                pause(0.05)
             end
-
-
             if UR20holding == true
-               
-                UR20load = PlaceObject('canCUBE.ply',UR20EELoc);
-%                load = PlaceObject('cancube.ply',EELoc);
-               
-               drawnow();
-
-%                pause(0.01)
-
-               delete(UR20load);
-
-            else 
-
-                drawnow();
-                pause(0.1)
-
+                load(2) = PlaceObject('canCUBE.ply',UR20EELoc);  
+            else
+                pause(0.05)    
             end
-
-
-      
+            drawnow();
+            if (UR3holding || UR20holding)
+            delete(load(:)) % destroy any cans or cubes we just created
+            end
         end
 
 end
