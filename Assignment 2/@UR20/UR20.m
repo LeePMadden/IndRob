@@ -5,6 +5,8 @@ classdef UR20 < handle
         
         %> workspace
         workspace = [-2 2 -2 2 -0.3 2];   
+
+        gripper = true;
          
     end
     
@@ -41,11 +43,31 @@ end
         %% PlotAndColourRobot
         % Given a robot index, add the glyphs (vertices and faces) and
         % colour them in if data is available 
+        %% PlotAndColourRobot
+        % Given a robot index, add the glyphs (vertices and faces) and
+        % colour them in if data is available 
         function PlotAndColourRobot(self)%robot,workspace)
             for linkIndex = 0:self.model.n
+
+                if self.gripper == true
+
+                    if linkIndex == self.model.n 
+                    [ faceData, vertexData, plyData{linkIndex + 1} ] = plyread(['UR20Link',num2str(linkIndex),'wGripper.ply'],'tri'); %#ok<AGROW>                
+                    self.model.faces{linkIndex + 1} = faceData;
+                    self.model.points{linkIndex + 1} = vertexData;
+                    else
+                    [ faceData, vertexData, plyData{linkIndex + 1} ] = plyread(['UR20Link',num2str(linkIndex),'.ply'],'tri'); %#ok<AGROW>                
+                    self.model.faces{linkIndex + 1} = faceData;
+                    self.model.points{linkIndex + 1} = vertexData;
+                    end
+
+                else
+
                 [ faceData, vertexData, plyData{linkIndex + 1} ] = plyread(['UR20Link',num2str(linkIndex),'.ply'],'tri'); %#ok<AGROW>                
                 self.model.faces{linkIndex + 1} = faceData;
                 self.model.points{linkIndex + 1} = vertexData;
+                end
+
             end
 
             % Display robot
