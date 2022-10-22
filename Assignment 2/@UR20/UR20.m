@@ -29,10 +29,10 @@ function GetUR20Robot(self)
             pause(0.001);
             name = ['UR_20_',datestr(now,'yyyymmddTHHMMSSFFF')];
 
-        L1 = Link('d',0.3,'a',0,'alpha',-pi/2,'offset',0,'qlim',[deg2rad(-360),deg2rad(360)]);
-        L2 = Link('d',0.27,'a',0.65,'alpha',pi,'offset',-pi/2,'qlim',[deg2rad(-90),deg2rad(90)]);
-        L3 = Link('d',0.24,'a',0.62,'alpha',pi,'offset',0,'qlim',[deg2rad(-170),deg2rad(170)]);
-        L4 = Link('d',0.22,'a',0,'alpha',-pi/2,'offset',pi/2,'qlim',[deg2rad(-360),deg2rad(360)]);
+        L1 = Link('d',0.3,'a',0,'alpha',pi/2,'offset',0,'qlim',[deg2rad(-360),deg2rad(360)]);
+        L2 = Link('d',0,'a',-0.65,'alpha',0,'offset',0,'qlim',[deg2rad(-90),deg2rad(90)]);
+        L3 = Link('d',0.03,'a',-0.62,'alpha',0,'offset',0,'qlim',[deg2rad(-170),deg2rad(170)]);
+        L4 = Link('d',0.22,'a',0,'alpha',pi/2,'offset',0,'qlim',[deg2rad(-360),deg2rad(360)]);
         L5 = Link('d',0.21,'a',0,'alpha',-pi/2,'offset',0,'qlim',[deg2rad(-360),deg2rad(360)]);
         L6 = Link('d',0.1,'a',0,'alpha',0,'offset',0,'qlim',[deg2rad(-360),deg2rad(360)]);
 
