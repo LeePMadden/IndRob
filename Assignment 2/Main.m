@@ -109,6 +109,9 @@ resPose = [deg2rad(-7.2) deg2rad(-144) deg2rad(137) ...
 
 resPose_2 = [deg2rad(-56.9) deg2rad(-79.2) deg2rad(82.6) ...
     deg2rad(-95) deg2rad(-90) deg2rad(123)];
+
+% resPose_2 = [deg2rad(-56.9) deg2rad(-79.2) deg2rad(82.6) ...
+%     deg2rad(-95) deg2rad(-90) deg2rad(123)];
     
     UR3arm.model.animate(resPose)
 
@@ -128,24 +131,56 @@ resPose_2 = [deg2rad(-56.9) deg2rad(-79.2) deg2rad(82.6) ...
 % % 
 % % trajectory_q2c(UR20arm, block, carry)
 % 
-for j = 1:1
+
+
+for j = 1:4
+
+    if j < 4
+
 
     disp(j)
     
     cTarget = cPose(j,:);
 
-    carry = false;
+    cancarry = false;
+
+    cubecarry = true;
 
     % call fucntion
     disp('picking up can')
-    trajectory_q2c(UR3arm, cTarget, carry)
-    
+    trajectory_q2c(UR3arm, cTarget, cancarry, UR20arm,  [-0.5,-0.5,0.15], cubecarry)
+
     UR3arm.model.getpos;
 
-    carry = true;
+    cancarry = false;
     
     disp('dropping off can')
-    trajectory_q2c(UR3arm, Input, carry)
+    trajectory_q2c(UR3arm, Input, cancarry, UR20arm,  [-0.5,-0.5,0.15], cubecarry)
+
+    else
+
+    disp(j)
+    
+    cTarget = cPose(j,:);
+
+    cancarry = false;
+
+    cubecarry = true;
+
+    % call fucntion
+    disp('picking up cube')
+    trajectory_q2c(UR3arm, cTarget, cancarry, UR20arm,  [-0.5,-0.5,0.15], cubecarry)
+
+    UR3arm.model.getpos;
+
+    cancarry = true;
+    
+    disp('dropping off cube')
+    trajectory_q2c(UR3arm, Input, cancarry, UR20arm,  [0,-2,0.4], cubecarry)
+
+    end
+
+
 
 end
 
@@ -294,38 +329,46 @@ end
 %             
 % end
 
-function trajectory_q2c(robotarm, nextPosition, holding)
+function trajectory_q2c(UR3robotarm, UR3nextPosition, UR3holding, UR20robotarm, UR20nextPosition, UR20holding)
 
 rehash path
         
-        nextLoc = transl(nextPosition(1,1),nextPosition(1,2),nextPosition(1,3)) * trotx(pi);
+        UR3nextLoc = transl(UR3nextPosition(1,1),UR3nextPosition(1,2),UR3nextPosition(1,3)) * trotx(pi);
+        UR3robotPos = UR3robotarm.model.getpos();
+        UR3ikcon = UR3robotarm.model.ikcon(UR3nextLoc, UR3robotPos);
+        UR3traj = jtraj(UR3robotPos, UR3ikcon,25);
 
-        robotPos = robotarm.model.getpos();
+        UR20nextLoc = transl(UR20nextPosition(1,1),UR20nextPosition(1,2),UR20nextPosition(1,3)) * trotx(pi);
+        UR20robotPos = UR20robotarm.model.getpos();
+        UR20ikcon = UR20robotarm.model.ikcon(UR20nextLoc, UR3robotPos);
+        UR20traj = jtraj(UR20robotPos, UR20ikcon,25);
 
-        ikcon = robotarm.model.ikcon(nextLoc, robotPos);
-
-        traj = jtraj(robotPos, ikcon,25);
         
         %iterates through joint trajectories 
-        for k = 1:size(traj,1)
+        for k = 1:size(UR3traj,1)
         
             hold on
         
-            traj_1 = traj(k,:);
+            UR3traj_1 = UR3traj(k,:);
+
+            UR20traj_1 = UR20traj(k,:);
         
-            robotarm.model.animate(traj_1);
+            UR3robotarm.model.animate(UR3traj_1);
+            UR3robotPos = UR3robotarm.model.getpos();
+            UR3robotLoc = UR3robotarm.model.fkine(UR3robotPos);
+            UR3EELoc = UR3robotLoc(1:3,4)' - [0,0,0.1];
 
-            robotPos = robotarm.model.getpos();
 
-            robotLoc = robotarm.model.fkine(robotPos);
-
-            EELoc = robotLoc(1:3,4)' - [0,0,0.1];
+            UR20robotarm.model.animate(UR20traj_1);
+            UR20robotPos = UR20robotarm.model.getpos();
+            UR20robotLoc = UR20robotarm.model.fkine(UR20robotPos);
+            UR20EELoc = UR20robotLoc(1:3,4)' - [0,0,0.5];
 
             %slow down speed 
 
-            if holding == true
+            if UR3holding == true
                
-                load = PlaceObject('can.ply',EELoc);
+                load = PlaceObject('can.ply',UR3EELoc);
 %                load = PlaceObject('cancube.ply',EELoc);
                
                drawnow();
@@ -340,6 +383,27 @@ rehash path
                 pause(0.1)
 
             end
+
+
+            if UR20holding == true
+               
+                UR20load = PlaceObject('canCUBE.ply',UR20EELoc);
+%                load = PlaceObject('cancube.ply',EELoc);
+               
+               drawnow();
+
+%                pause(0.01)
+
+               delete(UR20load);
+
+            else 
+
+                drawnow();
+                pause(0.1)
+
+            end
+
+
       
         end
 
