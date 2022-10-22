@@ -19,7 +19,7 @@ clc
      UR3Pose = [0.35,0.35,0.35];
     UR20Pose = [-1, 0, 0];
     
-    UR3arm = UR3Main;
+    UR3arm = UR3;
     UR20arm = UR20;
     
     % UR20arm = UR20;
