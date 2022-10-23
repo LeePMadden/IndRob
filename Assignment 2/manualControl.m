@@ -39,6 +39,7 @@ end
 %% manual control section
 while app.manualControlOn
     pause(0.2)
+    emergencyStop(app)
     if robot == 1 %UR3
         
         q = [deg2rad(app.q1Slider.Value) deg2rad(app.q2Slider.Value) deg2rad(app.q3Slider.Value)...
