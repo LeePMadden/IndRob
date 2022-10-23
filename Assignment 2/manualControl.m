@@ -4,7 +4,7 @@ function [ ] = manualControl(app, robot)
 % turn 0-100 into a number in the joint limit
 % animate
 %% Environment Setup
-if ~app.manualControlOn
+clf
     surf([-3,-3;3,3],[-3,3;-3,3],[0.01,0.01;0.01,0.01],'CData',imread('concrete.jpg'),'FaceColor','texturemap');
     
     hold on;
@@ -34,14 +34,14 @@ if ~app.manualControlOn
     UR3arm.model.animate(q)
     UR20arm.model.animate(q)
     app.manualControlOn = true;
-end
-
 %% manual control section
 while app.manualControlOn
     pause(0.2)
     emergencyStop(app)
     if robot == 1 %UR3
-        
+        if ~app.ManualControlButton.Value
+            app.manualControlOn = false;
+        end
         q = [deg2rad(app.q1Slider.Value) deg2rad(app.q2Slider.Value) deg2rad(app.q3Slider.Value)...
             deg2rad(app.q4Slider.Value) deg2rad(app.q5Slider.Value) deg2rad(app.q6Slider.Value)];
         
@@ -57,11 +57,12 @@ while app.manualControlOn
             pause(0.05)
         end
         
-        if ~app.ManualControlButton.Value
-            app.manualControlOn = false;
-        end
     end
     if robot == 2 %UR20
+        if ~app.ManualControlButton_2.Value
+            app.manualControlOn = false;
+        end
+        
         q = [deg2rad(app.q1Slider_2.Value) deg2rad(app.q2Slider_2.Value) deg2rad(app.q3Slider_2.Value)...
             deg2rad(app.q4Slider_2.Value) deg2rad(app.q5Slider_2.Value) deg2rad(app.q6Slider_2.Value)];
         
@@ -75,10 +76,6 @@ while app.manualControlOn
             UR20arm.model.animate(trajectory);
             drawnow();
             pause(0.05)
-        end
-        
-        if ~app.ManualControlButton_2.Value
-            app.manualControlOn = false;
         end
     end
 end
