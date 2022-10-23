@@ -1,169 +1,88 @@
 
 function collisionAvoidance
 %% Environment Setup
+% create workspace with concrete floor
 surf([-3,-3;3,3],[-3,3;-3,3],[0.01,0.01;0.01,0.01],'CData',imread('concrete.jpg'),'FaceColor','texturemap');
 
 hold on;
 
+% call my world to load in static objects
 MyWorld
 
+% robot poses
 UR3Pose = [0.35,0.35,0.35];
 UR20Pose = [-1.2, 0.2, 0];
 
+% assign instances of robots
 UR3arm = UR3;
 UR20arm = UR20;
 
+% assign robot model to robot for simplicity
 robot = UR3arm.model;
 
 %UR20arm.gripper = true;
 % UR20arm = UR20;
 
+% adjust base location of robots
 % UR3arm.model.base = transl(UR3Pose) * trotz(pi);
 robot.base = transl(UR3Pose) * trotz(pi);
 UR20arm.model.base = transl(UR20Pose) * trotz(pi);
 
-disp('UR3Pose')
-disp(UR3arm.model.base)
-disp('UR20Pose')
-disp(UR20arm.model.base)
-
+% resting pose of joint angles (obtained from teach ~ just picked for
+% aestethics)
 resPose = [deg2rad(-7.2) deg2rad(-144) deg2rad(137) ...
     deg2rad(-203) deg2rad(-86.4) deg2rad(-36)];
-
 resPose_2 = [deg2rad(-56.9) deg2rad(-79.2) deg2rad(82.6) ...
     deg2rad(-95) deg2rad(-90) deg2rad(123)];
 
+% pass the resting pose of dodging robot
 q = resPose;
     
+% animate resting poses
 % UR3arm.model.animate(resPose);
 robot.animate(resPose);
 UR20arm.model.animate(resPose_2);
 
+% positions to travel to
 pose1 = [1,0.2,0.3];
-
 pose2 = [0.3,0,0.55];
 
+% calculate required q values 
 q1 = UR3arm.model.ikcon(transl(pose1) * trotz(pi));
-
 q2 = UR3arm.model.ikcon(transl(pose2) * trotz(pi));
 
-disp('q1')
-disp(q1)
-disp('q2')
-disp(q2)
-
-centerpnt = [1,-0.5,0.5];
-
-side_1 = 1;
+% HIT BOX FOR PERSON'S SAFESPACE
+ 
+centerpnt = [1,-0.5,0.5];                                                                             % center off hitbox
+side_1 = 1;                                                                                           %length of sides of hitbox
 side_2 = 1;
-plotOptions.plotFaces = true;
-[vertex1,faces1,faceNormals1] = RectangularPrism(centerpnt-side_2/2, centerpnt+side_1/2,plotOptions);
+plotOptions.plotFaces = false;                                                                        % to display hitbox - make true
+[vertex1,faces1,faceNormals1] = RectangularPrism(centerpnt-side_2/2, centerpnt+side_1/2,plotOptions); % obtain vertices, faces and fac
 axis equal
 
-disp('vertex1')
-disp(vertex1)
-
-disp('faces1')
-disp(faces1)
-
-disp('facesnormals1')
-disp(faceNormals1)
-
-centerpnt2 = [0.35,0.45,0.15];
-
-side_3 = 0.5;
+% HIT BOX FOR TABLE
+centerpnt2 = [0.35,0.45,0.15];                                                                           % center off hitbox
+side_3 = 0.5;                                                                                            %length of sides of hitbox
 side_4 = 0.5;
-plotOptions.plotFaces = true;
-[vertex2,faces2,faceNormals2] = RectangularPrism(centerpnt2-side_4/2, centerpnt2+side_3/2,plotOptions);
+plotOptions.plotFaces = false;                                                                           % to display hitbox - make true
+[vertex2,faces2,faceNormals2] = RectangularPrism(centerpnt2-side_4/2, centerpnt2+side_3/2,plotOptions);  % obtain vertices, faces and fac
 axis equal
 
-disp('vertex2')
-disp(vertex2)
-
-disp('faces2')
-disp(faces2)
-
-disp('facesnormals2')
-disp(faceNormals2)
-
-PlaceObject('man.ply',[1,-0.5,0])
+PlaceObject('man.ply',[1,-0.5,0]) % loads in the representation of an obstacle
 hold on
 
-%currPos = UR3arm.model.fkine(UR3arm.model.getpos)
-% 
 
-vertex = [vertex1; vertex1];
-faces = [faces1; faces2];
-faceNormals = [faceNormals1; faceNormals2];
+vertex = [vertex1; vertex2];                        % assign vertices of each obstacle into the one matrix
+faces = [faces1; faces2];                           % assign faces of each obstacle into the one matrix
+faceNormals = [faceNormals1; faceNormals2];         % assign the facenormals of each obstacle into the one matrix
 
-disp('vertex')
-disp(vertex)
-
-disp('faces')
-disp(faces)
-
-disp('facesnormals')
-disp(faceNormals)
 
 pause(1)
-
-%% --------------- Collision Detection Segment ---------------
-
-% transform of every joint (i.e. start and end of every link)
-tr = zeros(4,4,robot.n+1);
-tr(:,:,1) = robot.base;
-L = robot.links;
-for i = 1 : robot.n
-    tr(:,:,i+1) = tr(:,:,i) * trotz(q(i)+L(i).offset) * transl(0,0,L(i).d) * transl(L(i).a,0,0) * trotx(L(i).alpha);
-end
-
-%% Go through each link and also each triangle face
-
-disp('size')
-disp(size(tr,3)-1)
-
-for i = 1 : size(tr,3)-1    
-    for faceIndex = 1:size(faces,1)
-        vertOnPlane = vertex(faces(faceIndex,1)',:);
-        [intersectP,check] = LinePlaneIntersection(faceNormals(faceIndex,:),vertOnPlane,tr(1:3,4,i)',tr(1:3,4,i+1)'); 
-        if check == 1 && IsIntersectionPointInsideTriangle(intersectP,vertex(faces(faceIndex,:)',:))
-            plot3(intersectP(1),intersectP(2),intersectP(3),'g*');
-            
-            disp('Intersection');
-        end
-    end    
-end
-
-steps = 2;
-
-while ~isempty(find(5 < abs(diff(rad2deg(jtraj(q1,q2,steps)))),3))
-    steps = steps + 1;
-end
-
-
-
-
-% qMatrix = jtraj(q1,q2,steps);
-
-% result = true(steps,1);
-
-% for i = 1: steps
-%     disp("Step: %d\n" )
-%     disp(i);
-%     result(i) = IsCollision(robot,qMatrix(i,:),faces,vertex,faceNormals,false);
-%     robot.animate(qMatrix(i,:));
-%     pause(0.05)
-% end
-
-% 3.3: Randomly select waypoints (primative RRT)
-% robot.animate(q1);
-
 
 qWaypoints = [q1;q2];
 isCollision = true;
 checkedTillWaypoint = 1;
 qMatrix = [];
-
 
 while (isCollision)
     startWaypoint = checkedTillWaypoint;
