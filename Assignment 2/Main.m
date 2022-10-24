@@ -2,13 +2,6 @@ close all
 
 clc
 
-    %% Generate Environment 
-    
-    %% Workspace Size 
-    % workspace = [-2 2 -2 2 -0.3 2];
-    
-    % workspace = [-10 10 -10 10 0 10];
-    
     %% Environment Setup
     surf([-3,-3;3,3],[-3,3;-3,3],[0.01,0.01;0.01,0.01],'CData',imread('concrete.jpg'),'FaceColor','texturemap');
    
@@ -96,11 +89,11 @@ cPose = [0.9 0.2  0.3;
         else
             disp('picking up can and cube')
             queueMovement(UR3arm,cPose(cancount,:),0)
-            queueMovement(UR20arm,[-0.5,-0.5,0.15],0)
+            queueMovement(UR20arm,[-0.5,-0.5,0.5],0)
             playMovements(UR3arm,UR20arm)
             disp('dropping off can and cube')
             queueMovement(UR3arm,Input,1)
-            queueMovement(UR20arm,[-2,-0,0.15],0)
+            queueMovement(UR20arm,[-1.9,-0,0.5],0)
             playMovements(UR3arm,UR20arm)
         end 
     end
@@ -114,51 +107,6 @@ resPose_2 = [deg2rad(-56.9) deg2rad(-79.2) deg2rad(82.6) ...
     
     UR3arm.model.animate(resPose);
     UR20arm.model.animate(resPose_2);
-
-function oldmain()
-
-for j = 1:4
-
-    if j < 4
-        disp(j)       
-        cTarget = cPose(j,:);   
-        cancarry = false;    
-        cubecarry = false;
-    
-        % call fucntion
-        disp('picking up can')
-        
-        %trajectory_q2c(UR3arm, cTarget, cancarry, UR20arm,  [-0.5,-0.5,0.15], cubecarry)
-        RMRC(UR3arm, cTarget) % RMRC Attempt
-
-        UR3arm.model.getpos;
-        cancarry = true;
-        
-        disp('dropping off can')
-        %trajectory_q2c(UR3arm, Input, cancarry, UR20arm,  [-0.5,-0.5,0.15], cubecarry)
-        RMRC(UR3arm, Input)
-
-    else
-        disp(j)       
-        cTarget = cPose(j,:);   
-        cancarry = false;  
-        cubecarry = false;  
-        % call fucntion
-        disp('picking up cube')
-        %trajectory_q2c(UR3arm, cTarget, cancarry, UR20arm,  [-0.5,-0.5,0.15], cubecarry)
-        RMRC(UR20arm, cTarget)
-
-        UR3arm.model.getpos;    
-        cubecarry = true;
-        
-        disp('dropping off cube')
-        %trajectory_q2c(UR3arm, Input, cancarry, UR20arm,  [0,-2,0.4], cubecarry)
-        RMRC(UR20arm, Input)
-    end
-end
-retract(UR3arm)
-
-end
 
 function retract(robotarm)
 
@@ -203,11 +151,11 @@ function newMainMovement(UR3arm, UR20arm)
         else
             disp('picking up can and cube')
             queueMovement(UR3arm,cPose(cancount,:),0)
-            queueMovement(UR20arm,[-0.5,-0.5,0.15],0)
+            queueMovement(UR20arm,[-0.5,-0.5,0.5],0)
             playMovements(UR3arm,UR20arm)
             disp('dropping off can and cube')
             queueMovement(UR3arm,Input,1)
-            queueMovement(UR20arm,[-2,-0,0.15],0)
+            queueMovement(UR20arm,[-1.9,-0,0.5],0)
             playMovements(UR3arm,UR20arm)
         end
     
@@ -279,8 +227,6 @@ function playMovements(r3, r20)
     items = [];
 end
 
-
-
 %% Resolved Motion Rate Control 
 
 function qMatrix = RMRC (robot,target)
@@ -331,10 +277,6 @@ for i = 1:steps-1
     S = Rdot*Ra';                                                          % Skew symmetric!
     linear_velocity = (1/deltaT)*deltaX;
     angular_velocity = [S(3,2);S(1,3);S(2,1)];                             % Check the structure of Skew Symmetric matrix!!
-    %disp('Rd = ')
-    %disp(Rd)
-    %disp('Ra = ')
-    %disp(Ra)
     deltaTheta = tr2rpy(Rd*Ra');                                           % Convert rotation matrix to RPY angles
     xdot = W*[linear_velocity;angular_velocity];                           % Calculate end-effector velocity to reach next waypoint.
     J = robot.model.jacob0(qMatrix(i,:));                                         % Get Jacobian at current joint state
