@@ -49,6 +49,14 @@ resPoseUR20_1 = [deg2rad(-56.9) deg2rad(-79.2) deg2rad(82.6) ...
 robot.base = transl(UR20Pose) * trotz(pi);
 UR3arm.model.base = transl(UR3Pose) * trotz(pi);
 
+
+% animate resting poses
+% UR3arm.model.animate(resPose);
+resPose = deg2rad([0 -28.8 40 -80 -93.6 0]);
+robot.animate(resPoseUR20_1);
+UR3arm.model.animate(resPose);
+
+
 % ending pose of joint angles (obtained from teach ~ just picked for
 % aestethics)
 
@@ -63,11 +71,6 @@ endingq = deg2rad([-163 -43.2 39.4 -87.8 -90 289]);
     
 
 resPose = deg2rad([0 -28.8 40 -80 -93.6 0]); % resting pose for UR3
-
-% animate resting poses
-% UR3arm.model.animate(resPose);
-robot.animate(resPoseUR20_1);
-UR3arm.model.animate(resPose);
 
 % positions to travel to
 pose1 = [1,0.2,0.3];
