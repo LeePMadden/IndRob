@@ -1,5 +1,5 @@
-
-function collisionAvoidance
+% 
+% function collisionAvoidanceUR20
 %% Environment Setup
 % create workspace with concrete floor
 surf([-3,-3;3,3],[-3,3;-3,3],[0.01,0.01;0.01,0.01],'CData',imread('concrete.jpg'),'FaceColor','texturemap');
@@ -9,7 +9,22 @@ hold on;
 % call my world to load in static objects
 MyWorld
 
-% robot poses
+%     PlaceObject('cancube.ply', [-0.5,-0.5,0.15])
+%     hold on
+% 
+%     PlaceObject('cancube.ply', [-2,-0,0.15])
+%     hold on
+%     PlaceObject('cancube.ply', [-2,-0.25,0.15])
+%     hold on
+%     PlaceObject('cancube.ply', [-2,-0.5,0.15])
+%     hold on
+%     PlaceObject('cancube.ply', [-2,-0.25,0.35])
+%     hold on
+%     PlaceObject('cancube.ply', [-2,-0.5,0.35])
+%     hold on
+
+
+% robot positions
 UR3Pose = [0.35,0.35,0.35];
 UR20Pose = [-1.2, 0.2, 0];
 
@@ -18,65 +33,80 @@ UR3arm = UR3;
 UR20arm = UR20;
 
 
-% assign robot model to robot for simplicity
-robot = UR3arm.model;
+robot = UR20arm.model; % assign robot model to robot for simplicity (instead of changing all values in IsCollision function)
 
+%UR20 q values ~ desired starting position
 %UR20arm.gripper = true;
 % UR20arm = UR20;
-resPose_2 = [deg2rad(-56.9) deg2rad(-79.2) deg2rad(82.6) ...
+resPoseUR20_1 = [deg2rad(-56.9) deg2rad(-79.2) deg2rad(82.6) ...
     deg2rad(-95) deg2rad(-90) deg2rad(123)];            %resting locationn of UR20
+
+
 
 % adjust base location of robots
 % UR3arm.model.base = transl(UR3Pose) * trotz(pi);
-robot.base = transl(UR3Pose) * trotz(pi);
-UR20arm.model.base = transl(UR20Pose) * trotz(pi);
 
-% resting pose of joint angles (obtained from teach ~ just picked for
+robot.base = transl(UR20Pose) * trotz(pi);
+UR3arm.model.base = transl(UR3Pose) * trotz(pi);
+
+% ending pose of joint angles (obtained from teach ~ just picked for
 % aestethics)
-resPose = deg2rad([0 -28.8 40 -80 -93.6 0]);
-resPose2 = deg2rad([-110 -86.4 130 -180 266 43.2]);
 
-% pass the resting pose of dodging robot
-q = resPose;
+seqpose1 = deg2rad([-56.9 -130 89.8 -51.8 -90 123]);
+
+seqpose2 = deg2rad([-143 -130 89.8 -51.8 -90 123]);
+
+seqpose3 = deg2rad([-158 -36 25 -80.6 -90 109]);
+
+
+endingq = deg2rad([-163 -43.2 39.4 -87.8 -90 289]); 
     
+
+resPose = deg2rad([0 -28.8 40 -80 -93.6 0]); % resting pose for UR3
+
 % animate resting poses
 % UR3arm.model.animate(resPose);
-robot.animate(resPose);
-UR20arm.model.animate(resPose_2);
+robot.animate(resPoseUR20_1);
+UR3arm.model.animate(resPose);
 
 % positions to travel to
 pose1 = [1,0.2,0.3];
 pose2 = [0.35,0.04,0.6];
 
 % calculate required q values 
-q1 = UR3arm.model.getpos;
-endpos = UR3arm.model.fkine(resPose2)
-q2 = UR3arm.model.ikcon(endpos);
+
+% q values sent to the ffunction
+q1 = robot.getpos;
+endpos = robot.fkine(endingq);
+q2 = endingq;% UR3arm.model.ikcon(endpos);
+
 
 % HIT BOX FOR PERSON'S SAFESPACE
  
-centerpnt = [1,-0.5,0.5];                                                                             % center off hitbox
-side_1 = 1.1;                                                                                           %length of sides of hitbox
-side_2 = 1.1;
+centerpnt = [-0.6,-1.2,0.8];                                                                             % center off hitbox
+side_1 = 0.8;                                                                                           %length of sides of hitbox
+side_2 = 0.8; 
 plotOptions.plotFaces = false;                                                                        % to display hitbox - make true
-[vertex1,faces1,faceNormals1] = RectangularPrism(centerpnt-side_2/2, centerpnt+side_1/2,plotOptions); % obtain vertices, faces and fac
+[vertex,faces,faceNormals] = RectangularPrism(centerpnt-side_2/2, centerpnt+side_1/2,plotOptions); % obtain vertices, faces and fac
 axis equal
 
-% HIT BOX FOR TABLE
-centerpnt2 = [0.35,0.45,0.15];                                                                           % center off hitbox
-side_3 = 0.5;                                                                                            %length of sides of hitbox
-side_4 = 0.5;
-plotOptions.plotFaces = false;                                                                           % to display hitbox - make true
-[vertex2,faces2,faceNormals2] = RectangularPrism(centerpnt2-side_4/2, centerpnt2+side_3/2,plotOptions);  % obtain vertices, faces and fac
-axis equal
+% Persons location
 
-PlaceObject('man.ply',[1,-0.5,0]) % loads in the representation of an obstacle
+PlaceObject('man1.ply',[-0.6,-1.2,0]) % loads in the representation of an obstacle
 hold on
 
 
-vertex = [vertex1; vertex2];                        % assign vertices of each obstacle into the one matrix
-faces = [faces1; faces2];                           % assign faces of each obstacle into the one matrix
-faceNormals = [faceNormals1; faceNormals2];         % assign the facenormals of each obstacle into the one matrix
+% % HIT BOX FOR TABLE
+% centerpnt2 = [0.35,0.45,0.15];                                                                           % center off hitbox
+% side_3 = 0.5;                                                                                            %length of sides of hitbox
+% side_4 = 0.5;
+% plotOptions.plotFaces = false;                                                                           % to display hitbox - make true
+% [vertex2,faces2,faceNormals2] = RectangularPrism(centerpnt2-side_4/2, centerpnt2+side_3/2,plotOptions);  % obtain vertices, faces and fac
+% axis equal
+
+% vertex = [vertex1; vertex2];                        % assign vertices of each obstacle into the one matrix
+% faces = [faces1; faces2];                           % assign faces of each obstacle into the one matrix
+% faceNormals = [faceNormals1; faceNormals2];         % assign the facenormals of each obstacle into the one matrix
 
 
 pause(1)
@@ -120,20 +150,35 @@ while (isCollision)
 end
 
 disp(qMatrix)
-
-for i = 1:size(qMatrix,1)
-
-%     queueMovement(robot,robot.fkine(qMatrix(i,:)),0)
 % 
-%     playMovements(robot,0)
-%  
-robot.animate(qMatrix(i,:));
-pause(0.1)
-end
+% pause(5)
+
+
+
+% steps = 2;
+% 
+% qMatrix = nan(steps,6);                                             % Create memory allocation for variables
+% 
+% q1 = robot.model.getpos;
+% 
+% for i = 1:steps
+%     qMatrix(i,:) = (1-s(i))*seqpose1 + s(i)*seqpose2;                   	% Generate interpolated joint angles
+% end
+% 
 % robot.animate(qMatrix)
 
 
+
+for i = 1:size(qMatrix,1)
+
+robot.animate(qMatrix(i,:))
+pause(0.1)
+
 end
+% robot.animate(qMatrix)
+
+% 
+% end
 
 %% IsIntersectionPointInsideTriangle
 % Given a point which is known to be on the same plane as the triangle

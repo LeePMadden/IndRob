@@ -1,5 +1,5 @@
 
-function collisionAvoidance
+function collisionAvoidanceUR3
 %% Environment Setup
 % create workspace with concrete floor
 surf([-3,-3;3,3],[-3,3;-3,3],[0.01,0.01;0.01,0.01],'CData',imread('concrete.jpg'),'FaceColor','texturemap');
