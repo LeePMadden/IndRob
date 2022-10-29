@@ -2,6 +2,8 @@ close all
 
 clc
 
+app = A2GUI;
+
     %% Environment Setup
     surf([-3,-3;3,3],[-3,3;-3,3],[0.01,0.01;0.01,0.01],'CData',imread('concrete.jpg'),'FaceColor','texturemap');
    
@@ -14,6 +16,7 @@ clc
 
     UR3arm = UR3;
     UR20arm = UR20;
+    
 
     %UR20arm.gripper = true;
     % UR20arm = UR20;
@@ -75,26 +78,29 @@ cPose = [0.9 0.2  0.3;
     %newMainMovement(UR3arm, UR20arm)
     %disp('rmrctest')
     %RMRC(UR20arm,[1 0.2 0.3])
-
+    disp("before wait")
+uiwait
+disp("after wait")
 % Main movement loop
     for cancount = 1:8
+        emergencyStop(app)
         disp(cancount) 
         if mod(cancount,4)~=0                   
             disp('picking up can')
             queueMovement(UR3arm,cPose(cancount,:),0)
-            playMovements(UR3arm,0)
+            playMovements(UR3arm,0, app)
             disp('dropping off can')
             queueMovement(UR3arm,Input,1)
-            playMovements(UR3arm,0)
+            playMovements(UR3arm,0, app)
         else
             disp('picking up can and cube')
             queueMovement(UR3arm,cPose(cancount,:),0)
             queueMovement(UR20arm,[-0.5,-0.5,0.5],0)
-            playMovements(UR3arm,UR20arm)
+            playMovements(UR3arm,UR20arm, app)
             disp('dropping off can and cube')
             queueMovement(UR3arm,Input,1)
             queueMovement(UR20arm,[-1.9,-0,0.5],0)
-            playMovements(UR3arm,UR20arm)
+            playMovements(UR3arm,UR20arm, app)
         end 
     end
         
@@ -122,6 +128,7 @@ traj = jtraj(currPose,resPose,40);
 
     % iterates through joint trajectories
     for k = 1:size(traj,1)
+        emergencyStop()
     
         hold on
     
@@ -140,23 +147,24 @@ end
 %% New Main Movement
 function newMainMovement(UR3arm, UR20arm)
     for cancount = 1:4
+        
         disp(cancount) 
         if cancount < 2 % TEMP CHANGE SHOULD BE 1 < 4                  
             disp('picking up can')
             queueMovement(UR3arm,cPose(cancount,:),0)
-            playMovements(UR3arm,0)
+            playMovements(UR3arm,0, app)
             disp('dropping off can')
             queueMovement(UR3arm,Input,1)
-            playMovements(UR3arm,0)
+            playMovements(UR3arm,0, app)
         else
             disp('picking up can and cube')
             queueMovement(UR3arm,cPose(cancount,:),0)
             queueMovement(UR20arm,[-0.5,-0.5,0.5],0)
-            playMovements(UR3arm,UR20arm)
+            playMovements(UR3arm,UR20arm, app)
             disp('dropping off can and cube')
             queueMovement(UR3arm,Input,1)
             queueMovement(UR20arm,[-1.9,-0,0.5],0)
-            playMovements(UR3arm,UR20arm)
+            playMovements(UR3arm,UR20arm, app)
         end
     
     end
@@ -180,7 +188,7 @@ global items
 end
 
 %% Play Movements
-function playMovements(r3, r20)
+function playMovements(r3, r20, app)
     global joints                                                          % get the most recently calculated qmatricies
     global joints2
     global items
@@ -193,7 +201,9 @@ function playMovements(r3, r20)
         robot2 = r20
     end
 
-    for i = 1:length(joints)                                               % animate through qMatrix for all active robots
+    for i = 1:length(joints)  
+        emergencyStop(app)
+        % animate through qMatrix for all active robots
         if ~isempty(joints)
             robot.model.animate(joints(i,:));
             if items(1) == 1
