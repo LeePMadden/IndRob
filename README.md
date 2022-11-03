@@ -13,3 +13,16 @@ collisionAvoidance is basic collision avoidance using random path when an obstac
 
 visualServoing is basic visual servoing using the UR3 which retreats when a marker comes too close
 
+
+
+Explanation Notes:
+GUI Creation:
+- App designer 
+- Drag and drop onto the GUI from component library in design view
+- In code view:
+  - startup function ~ not used 
+  - ESTOP value change ~ toggle ~ call value through app.ESTOPBUTTON.value 
+      if value = 1
+      change the colour to red 
+      change stop to true ~ a class specific variable 
+      text ~ printf stopped. 
