@@ -63,7 +63,6 @@ cPose = [0.9 0.2  0.3;
     
     PlaceObject('cancube.ply', [-0.5,-0.5,0.15])
     hold on
-
     PlaceObject('cancube.ply', [-2,-0,0.15])
     hold on
     PlaceObject('cancube.ply', [-2,-0.25,0.15])
@@ -207,8 +206,8 @@ function playMovements(r3, r20, app)
         if ~isempty(joints)
             robot.model.animate(joints(i,:));
             if items(1) == 1
-                lctn = robot.model.fkine(robot.model.getpos());
-                load(1) = PlaceObject('can.ply',lctn(1:3,4)'-[0,0,0.2]);
+                lctn = robot.model.fkine(robot.model.getpos());                 % FKINE HERE to obtain end effector position
+                load(1) = PlaceObject('can.ply',lctn(1:3,4)'-[0,0,0.2]);        % places can object at end effector position with small offset
             elseif items(1) == 2
                 lctn = robot.model.fkine(robot.model.getpos());
                 load(1) = PlaceObject('cube.ply',lctn(1:3,4)'-[0,0,0.5]);
@@ -217,8 +216,8 @@ function playMovements(r3, r20, app)
         if ~isempty(joints2)
             robot2.model.animate(joints2(i,:));
             if items(2) == 1
-                lctn = robot2.model.fkine(robot2.model.getpos());
-                load(2) = PlaceObject('can.ply',lctn(1:3,4)'-[0,0,0.2]);
+                lctn = robot2.model.fkine(robot2.model.getpos());                 % FKINE HERE to obtain end effector position
+                load(2) = PlaceObject('can.ply',lctn(1:3,4)'-[0,0,0.2]);        % places can object at end effector position with small offset
             elseif items(2) == 2
                 lctn = robot2.model.fkine(robot2.model.getpos());
                 load(2) = PlaceObject('cube.ply',lctn(1:3,4)'-[0,0,0.5]);
