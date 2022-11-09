@@ -260,7 +260,7 @@ angleError = zeros(3,steps);    % For plotting trajectory error
 % Generating trajectoy
 % Setting trajectory from initial pose to target pose 
 s = lspb(0,1,steps);            % Trapezoidal trajectory scalar
-origin = robot.model.fkine(robot.model.getpos) + robot.model.base       % Obtains robot position with reference to offset in world
+origin = robot.model.fkine(robot.model.getpos) + robot.model.base       % Obtains EE position with reference to offset in world
 % steps from origin to next position
  for i=1:steps
      x(1,i) = (1-s(i))*origin(1,4) + s(i)*target(1); % Points in x  
@@ -268,7 +268,7 @@ origin = robot.model.fkine(robot.model.getpos) + robot.model.base       % Obtain
      x(3,i) = (1-s(i))*origin(3,4) + s(i)*target(3); % Points in z
      theta(1,i) = 0;          % Roll angle 
      theta(2,i) = pi;           % Pitch angle
-     th eta(3,i) = 0;            % Yaw angle
+     theta(3,i) = 0;            % Yaw angle
  end
 
 T = [rpy2r(theta(1,1),theta(2,1),theta(3,1)) x(:,1);zeros(1,3) 1]         % Create transformation of first point and angle
@@ -277,24 +277,30 @@ qMatrix(1,:) = robot.model.ikcon(T,q0);                                   % Solv
 
 % Track RMRC trajectory 
 for i = 1:steps-1
+    % translation error
     T = robot.model.fkine(qMatrix(i,:));                                    % Get forward transformation at current joint state
-
     deltaX = x(:,i+1) - T(1:3,4);                                          % Get position error from next waypoint ~ difference between next and current waypoint
+    % rotation error
     Rd = rpy2r(theta(1,i+1),theta(2,i+1),theta(3,i+1));                    % Get next RPY angles, convert to rotation matrix
     Ra = T(1:3,1:3);                                                       % Current end-effector rotation matrix ~ from fwd kin
     Rdot = (1/deltaT)*(Rd - Ra);                                           % Calculate rotation matrix error
+
     S = Rdot*Ra';                                                          % Skew symmetric! ~ angular velocity from time derivative from the rotation matrix
     linear_velocity = (1/deltaT)*deltaX;
     angular_velocity = [S(3,2);S(1,3);S(2,1)];                             % Check the structure of Skew Symmetric matrix!!
     deltaTheta = tr2rpy(Rd*Ra');                                           % Convert rotation matrix to RPY angles
+
     xdot = W*[linear_velocity;angular_velocity];                           % Calculate end-effector velocity to reach next waypoint. ~ multiply by the w matrix such that dims are > acc. then others
     J = robot.model.jacob0(qMatrix(i,:));                                   % Get Jacobian at current joint state ~ always want J0 wrt to base
+
+    %calculate manipulability 
     m(i) = sqrt(det(J*J'));                                                % manipulability equation  
     if m(i) < epsilon                                                      % If manipulability is less than given threshold (epsilon)
         lambda = (1 - m(i)/epsilon)*5E-2;                                  % damping coefficient
     else
         lambda = 0;
     end
+
     invJ = inv(J'*J + lambda *eye(6))*J';                                  % DLS Inverse ~ 
     qdot(i,:) = (invJ*xdot)';                                              % Solve the RMRC equation, DLS * by velocity vector transpose ~ due to different orientations
    
@@ -306,6 +312,7 @@ for i = 1:steps-1
             qdot(i,j) = 0;                                                 % Stop the motor
         end
     end
+    
     qMatrix(i+1,:) = qMatrix(i,:) + deltaT*qdot(i,:);                      % Update next joint state based on joint velocities
     positionError(:,i) = x(:,i+1) - T(1:3,4);                              % For plotting
     angleError(:,i) = deltaTheta;                                          % For plotting

@@ -40,6 +40,7 @@ app.jointxyzmovementButton.Value = 0;
 while app.manualControlOn
     pause(0.2)
     emergencyStop(app)
+
     if robot == 1 %UR3
         
         if ~app.ManualControlButton.Value
@@ -54,6 +55,7 @@ while app.manualControlOn
             
             dx = [vx;vy;vz;0;0;0];
             
+            % lab sol 11 ~ manual control with DLS
             lambda = 0.5;
             J = UR3arm.model.jacob0(q);
             Jinv_dls = inv((J'*J)+lambda^2*eye(6))*J';
@@ -90,6 +92,7 @@ while app.manualControlOn
             app.manualControlOn = false;
         end
         
+        % xyz movement
         if app.jointxyzmovementButton.Value
             vx = app.x2;
             vy = app.y2;
@@ -109,6 +112,7 @@ while app.manualControlOn
             app.y2 = 0;
             app.z2 = 0;
             
+        % slider movements    
         else
             
             q = [deg2rad(app.q1Slider_2.Value) deg2rad(app.q2Slider_2.Value) deg2rad(app.q3Slider_2.Value)...

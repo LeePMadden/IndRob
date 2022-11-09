@@ -54,7 +54,7 @@ endpos = UR3arm.model.fkine(resPose2)
 q2 = UR3arm.model.ikcon(endpos);
 
 % HIT BOX FOR PERSON'S SAFESPACE
- 
+
 centerpnt = [1,-0.5,0.5];                                                                             % center off hitbox
 side_1 = 1.1;                                                                                           %length of sides of hitbox
 side_2 = 1.1;
@@ -80,19 +80,24 @@ faceNormals = [faceNormals1; faceNormals2];         % assign the facenormals of 
 
 
 pause(1)
-
-qWaypoints = [q1;q2];
-isCollision = true;
-checkedTillWaypoint = 1;
+% variables for random selection ~ pick random points in configuration
+% space 
+% random walk algorithm
+qWaypoints = [q1;q2];   % starting and ending poses
+isCollision = true;     % set isCollision to true initially so that loop runs
+checkedTillWaypoint = 1;    
 qMatrix = [];
 
 pause(5)
 
 % Check if pose is in collision
+% auto path planning through randomly picking points
 while (isCollision)
-    startWaypoint = checkedTillWaypoint;
+    startWaypoint = checkedTillWaypoint;                                            % tracking which waypoint 
     for i = startWaypoint:size(qWaypoints,1)-1
-        qMatrixJoin = InterpolateWaypointRadians(qWaypoints(i:i+1,:),deg2rad(10));
+        qMatrixJoin = InterpolateWaypointRadians(qWaypoints(i:i+1,:),deg2rad(10));  % creating q matrix from ith waypoint to ith + 1 waypoint
+        % doesnt check for all collisions ~ only checks until path is found
+        % if there is no collision on waypoint traj
         if ~IsCollision(robot,qMatrixJoin,faces,vertex,faceNormals)
             qMatrix = [qMatrix; qMatrixJoin]; %#ok<AGROW>
             robot.animate(qMatrixJoin);
@@ -100,14 +105,19 @@ while (isCollision)
             isCollision = false;
             checkedTillWaypoint = i+1;
             % Now try and join to the final goal (q2)
+            % Now check the collision between the last step and the goal
+            % state
             qMatrixJoin = InterpolateWaypointRadians([qMatrix(end,:); q2],deg2rad(10));
+            % if there is no collision, then waypoints from q1 have been
+            % joined to q2
             if ~IsCollision(robot,qMatrixJoin,faces,vertex,faceNormals)
+                % returns traj in q matrix
                 qMatrix = [qMatrix;qMatrixJoin];
                 % Reached goal without collision, so break out
                 break;
             end
         else
-            % Randomly pick a pose that is not in collision
+            % Randomly pick a pose if prev pose was in collision
             qRand = (2 * rand(1,6) - 1) * pi;
             while IsCollision(robot,qRand,faces,vertex,faceNormals)
                 qRand = (2 * rand(1,6) - 1) * pi;
@@ -121,6 +131,8 @@ end
 
 disp(qMatrix)
 
+
+% go through q matrix 
 for i = 1:size(qMatrix,1)
 
 %     queueMovement(robot,robot.fkine(qMatrix(i,:)),0)
@@ -175,6 +187,8 @@ end
 % This is based upon the output of questions 2.5 and 2.6
 % Given a robot model (robot), and trajectory (i.e. joint state vector) (qMatrix)
 % and triangle obstacles in the environment (faces,vertex,faceNormals)
+% line and triangle method
+
 function result = IsCollision(robot,qMatrix,faces,vertex,faceNormals,returnOnceFound)
 if nargin < 6
     returnOnceFound = true;
@@ -189,10 +203,18 @@ for qIndex = 1:size(qMatrix,1)
     for i = 1 : size(tr,3)-1    
         for faceIndex = 1:size(faces,1)
             vertOnPlane = vertex(faces(faceIndex,1)',:);
+            % LPI ~ takes in start and end points of line segment, face
+            % normal and vertices of triangle
+            % iterate through each of the links
+            % iterate through each face of the triagle
+            % plot green * at point of intersection
+            % need to check if intersects and if inside triangle
             [intersectP,check] = LinePlaneIntersection(faceNormals(faceIndex,:),vertOnPlane,tr(1:3,4,i)',tr(1:3,4,i+1)'); 
+            % IIPIT ~ checks if point is inside traingle 
             if check == 1 && IsIntersectionPointInsideTriangle(intersectP,vertex(faces(faceIndex,:)',:))
                 plot3(intersectP(1),intersectP(2),intersectP(3),'g*');
                 disp('Intersection');
+                % there is a collsion
                 result = true;
                 if returnOnceFound
                     return
@@ -209,11 +231,11 @@ end
 % transforms - list of transforms
 function [ transforms ] = GetLinkPoses( q, robot)
 
-links = robot.links;
-transforms = zeros(4, 4, length(links) + 1);
+links = robot.links; % robot link transform 
+transforms = zeros(4, 4, length(links) + 1); 
 transforms(:,:,1) = robot.base;
 
-for i = 1:length(links)
+for i = 1:length(links) % go through each joint and populate the transform
     L = links(1,i);
     
     current_transform = transforms(:,:, i);
@@ -227,12 +249,15 @@ end
 %% FineInterpolation
 % Use results from Q2.6 to keep calling jtraj until all step sizes are
 % smaller than a given max steps size
+% changes steps when the angular distance between two joints is larger
 function qMatrix = FineInterpolation(q1,q2,maxStepRadians)
 if nargin < 3
     maxStepRadians = deg2rad(1);
 end
     
 steps = 2;
+% while loop continues until there are no steps larger than the requested
+% deg
 while ~isempty(find(maxStepRadians < abs(diff(jtraj(q1,q2,steps))),1))
     steps = steps + 1;
 end
@@ -241,6 +266,7 @@ end
 
 %% InterpolateWaypointRadians
 % Given a set of waypoints, finely intepolate them
+% uses jtraj from FineInterpolation to get to the minimum radians per step
 function qMatrix = InterpolateWaypointRadians(waypointRadians,maxStepRadians)
 if nargin < 2
     maxStepRadians = deg2rad(1);
